@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="pull_style">
+        <item name="pullDrawable">@drawable/pinter_pull</item>
+    </style>
+</resources>
