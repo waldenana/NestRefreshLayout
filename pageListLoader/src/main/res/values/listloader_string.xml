@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loader_no_more">没有更多信息了</string>
+    <string name="loader_load_more">加载更多</string>
+    <string name="loader_pull_load">下拉刷新</string>
+    <string name="loader_pull_ready">松开刷新</string>
+    
+    <string name="loader_loading">正在加载</string>
+    <string name="loader_success">刷新成功</string>
+    <string name="loader_load_ready">松开载入更多</string>
+</resources>
