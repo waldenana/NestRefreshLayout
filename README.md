@@ -4,7 +4,7 @@
 ##1,配置gradle
 
 ``` groovy
-compile 'com.github.anzewei:parallaxbacklayout:0.1'
+compile 'com.github.anzewei.pageListLoader:pageListLoader:0.1'
 ``` 
 ##2.设置属性
 ``` java
