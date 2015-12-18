@@ -9,8 +9,8 @@ import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.ViewUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -22,7 +22,6 @@ import android.widget.Scroller;
 import com.github.anzewei.pagelist.R;
 import com.github.anzewei.pagelist.normalstyle.PageListLoader;
 import com.github.anzewei.pagelist.normalstyle.PullHeader;
-import com.github.anzewei.pagelist.util.L;
 
 
 /**
@@ -31,6 +30,7 @@ import com.github.anzewei.pagelist.util.L;
  * @author zewei
  */
 public abstract class AbsListLoader extends ViewGroup {
+
 
     public interface LoaderDecor {
 
@@ -270,15 +270,14 @@ public abstract class AbsListLoader extends ViewGroup {
                         child.getMeasuredWidth());
                 maxHeight = Math.max(maxHeight,
                         child.getMeasuredHeight());
-
-                childState = ViewUtils.combineMeasuredStates(childState, ViewCompat.getMeasuredState(child));
+                childState = combineMeasuredStates(childState, child.getMeasuredState());
             }
         }
         // Check against our minimum height and width
         maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
         maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
-        setMeasuredDimension(ViewCompat.resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
-                ViewCompat.resolveSizeAndState(maxHeight, heightMeasureSpec,
+        setMeasuredDimension(resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
+                resolveSizeAndState(maxHeight, heightMeasureSpec,
                         childState << MEASURED_HEIGHT_STATE_SHIFT));
 
         if (count > 1) {
@@ -390,15 +389,6 @@ public abstract class AbsListLoader extends ViewGroup {
         mbLoading = refresh;
     }
 
-    private void setRefreshingInvoked(boolean refresh) {
-        mbRefreshingInvoked = refresh;
-    }
-
-    private void setLoadingingInvoked(boolean refresh) {
-        L.d("loading invoked " + refresh);
-        mbLoadingInvoked = refresh;
-    }
-
     public boolean isLoadingMore() {
         return mbLoading;
     }
@@ -455,7 +445,7 @@ public abstract class AbsListLoader extends ViewGroup {
     }
 
     protected boolean shouldLoadMore() {
-        if (mFooterView.getMeasuredHeight() < getScrollY() && !isLoadAll()) {
+        if (mFooterView.getMeasuredHeight() <= getScrollY() && !isLoadAll()) {
             ((PageListLoader.LoaderDecor) mFooterView).setState(PullHeader.STATE_REFRESHING);
             animation2Footer();
             return true;
@@ -464,17 +454,15 @@ public abstract class AbsListLoader extends ViewGroup {
     }
 
     protected void invokeRefresh() {
-        if (mLoadListener != null && !mbRefreshingInvoked) {
-            setRefreshingInvoked(true);
+        if (mLoadListener != null && !mbRefreshingInvoked)
             mLoadListener.onRefresh(this);
-        }
+        mbRefreshingInvoked = true;
     }
 
     protected void invokeLoadMore() {
-        if (mLoadListener != null && !mbLoadingInvoked) {
-            setLoadingingInvoked(true);
+        if (mLoadListener != null && !mbLoadingInvoked)
             mLoadListener.onLoading(this);
-        }
+        mbLoadingInvoked = true;
     }
 
     protected int getOffsetY() {
@@ -512,8 +500,8 @@ public abstract class AbsListLoader extends ViewGroup {
     public void onLoadFinished() {
         setRefreshing(false);
         setLoading(false);
-        setRefreshingInvoked(false);
-        setLoadingingInvoked(false);
+        mbRefreshingInvoked = false;
+        mbLoadingInvoked = false;
         mbLoadAll = false;
         if (mFooterView != null)
             ((PageListLoader.LoaderDecor) mFooterView).setState(PullHeader.STATE_NORMAL);
@@ -521,8 +509,8 @@ public abstract class AbsListLoader extends ViewGroup {
     }
 
     public void onLoadAll() {
-        setRefreshingInvoked(false);
-        setLoadingingInvoked(false);
+        mbRefreshingInvoked = false;
+        mbLoadingInvoked = false;
         setRefreshing(false);
         setLoading(false);
         mbLoadAll = true;
@@ -623,6 +611,7 @@ public abstract class AbsListLoader extends ViewGroup {
             }
         } else {
             boolean canscroll = ViewCompat.canScrollVertically(mTargetView, direction);
+            Log.d(TAG, "canScrollVertically: " + canscroll);
             return canscroll;
         }
     }
