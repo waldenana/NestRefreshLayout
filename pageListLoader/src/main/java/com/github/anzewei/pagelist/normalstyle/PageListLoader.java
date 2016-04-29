@@ -1,6 +1,6 @@
 /**
  * ClassName : PullRefreshContainer</br>
- * <p/>
+ * <p>
  */
 package com.github.anzewei.pagelist.normalstyle;
 
@@ -22,6 +22,12 @@ import com.github.anzewei.pagelist.base.AbsListLoader;
  */
 public class PageListLoader extends AbsListLoader {
 
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            PageListLoader.super.invokeRefresh();
+        }
+    };
 
     public PageListLoader(Context context) {
         this(context, null);
@@ -49,7 +55,7 @@ public class PageListLoader extends AbsListLoader {
         for (int i = 0; i < N; i++) {
             int attr = a.getIndex(i);
             if (attr == R.styleable.PageListLoader_refreshLayout) {
-                resHeader = a.getInt(attr, resHeader);
+                resHeader = a.getResourceId(attr, resHeader);
             }
         }
         a.recycle();
@@ -88,12 +94,8 @@ public class PageListLoader extends AbsListLoader {
 
     private void animation2Header() {
         setRefreshing(true);
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                PageListLoader.super.invokeRefresh();
-            }
-        }, animation2Y(-mHeaderView.getMeasuredHeight()));
+        removeCallbacks(runnable);
+        postDelayed(runnable, animation2Y(-mHeaderView.getMeasuredHeight()));
     }
 
 }

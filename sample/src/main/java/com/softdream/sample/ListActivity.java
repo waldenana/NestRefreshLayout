@@ -14,7 +14,7 @@ import com.github.anzewei.pagelist.normalstyle.PageListLoader;
 /**
  * Created by zewei on 2015-12-09.
  */
-public class ListFragment extends AppCompatActivity implements IPageListener {
+public class ListActivity extends AppCompatActivity implements IPageListener {
     AbsListLoader mLoader;
     private ArrayAdapter<String> mAdapter;
 

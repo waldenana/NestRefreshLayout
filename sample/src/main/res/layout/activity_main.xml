@@ -13,5 +13,10 @@
         android:id="@+id/btn_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="List" />
+    <Button
+        android:id="@+id/btn_page"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Page" />
 </LinearLayout>

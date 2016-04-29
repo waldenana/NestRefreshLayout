@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -270,15 +269,15 @@ public abstract class AbsListLoader extends ViewGroup {
                         child.getMeasuredWidth());
                 maxHeight = Math.max(maxHeight,
                         child.getMeasuredHeight());
-                childState = combineMeasuredStates(childState, child.getMeasuredState());
+                childState = ViewCompat.combineMeasuredStates(childState,ViewCompat.getMeasuredState(child));
             }
         }
         // Check against our minimum height and width
         maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
         maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
-        setMeasuredDimension(resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
-                resolveSizeAndState(maxHeight, heightMeasureSpec,
-                        childState << MEASURED_HEIGHT_STATE_SHIFT));
+        setMeasuredDimension(ViewCompat.resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
+                ViewCompat.resolveSizeAndState(maxHeight, heightMeasureSpec,
+                        childState << ViewCompat.MEASURED_HEIGHT_STATE_SHIFT));
 
         if (count > 1) {
             for (int i = 0; i < count; i++) {
@@ -454,15 +453,18 @@ public abstract class AbsListLoader extends ViewGroup {
     }
 
     protected void invokeRefresh() {
-        if (mLoadListener != null && !mbRefreshingInvoked)
+        if (mLoadListener != null && !mbRefreshingInvoked) {
+            mbRefreshingInvoked = true;
             mLoadListener.onRefresh(this);
-        mbRefreshingInvoked = true;
+        }else if (!mbRefreshingInvoked)
+            mbRefreshingInvoked = true;
     }
 
     protected void invokeLoadMore() {
-        if (mLoadListener != null && !mbLoadingInvoked)
+        if (mLoadListener != null && !mbLoadingInvoked) {
+            mbLoadingInvoked = true;
             mLoadListener.onLoading(this);
-        mbLoadingInvoked = true;
+        }else mbLoadingInvoked = true;
     }
 
     protected int getOffsetY() {
@@ -474,6 +476,7 @@ public abstract class AbsListLoader extends ViewGroup {
     }
 
     protected int animation2Y(int y) {
+        mScroller.abortAnimation();
         int duration = Math.abs(y - getScrollY());
         duration = Math.max(DROP_CIRCLE_ANIMATOR_DURATION, duration);
         mScroller.startScroll(0, getScrollY(), 0, y - getScrollY(), duration);
@@ -610,9 +613,7 @@ public abstract class AbsListLoader extends ViewGroup {
                         .getMeasuredHeight();
             }
         } else {
-            boolean canscroll = ViewCompat.canScrollVertically(mTargetView, direction);
-            Log.d(TAG, "canScrollVertically: " + canscroll);
-            return canscroll;
+            return ViewCompat.canScrollVertically(mTargetView, direction);
         }
     }
 
