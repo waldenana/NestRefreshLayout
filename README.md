@@ -15,12 +15,9 @@ loader.setLoadMoreEnable(true)//底部加载更多
 ##3.更新完成
 
 在加载完成后你需要调用
-``` java
-loader.stopRefresh();//完成刷新
-``` 
 
 ``` java
-loader.stopLoading();//完成加载
+loader.onLoadFinished();//完成加载
 ``` 
 ``` java
 loader.onLoadAll();//没有更多了
