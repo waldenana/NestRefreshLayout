@@ -4,7 +4,7 @@
 ##1,配置gradle
 
 ``` groovy
-compile 'com.github.anzewei.pageListLoader:pageListLoader:0.2'
+compile 'com.github.anzewei.pageListLoader:pageListLoader:0.3'
 ``` 
 ##2.设置属性
 ``` java
