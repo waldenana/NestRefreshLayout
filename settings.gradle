@@ -1,1 +1,1 @@
-include ':pageListLoader', ':sample'
+include ':refreshLayout', ':sample'

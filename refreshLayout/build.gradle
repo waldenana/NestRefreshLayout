@@ -1,0 +1,49 @@
+apply plugin: 'com.android.library'
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'cn.appsdream.nestrefresh'
+
+    publishedGroupId = 'cn.appsdream.nestrefresh'
+    libraryName = 'refreshLayout'
+    artifact = 'refreshLayout'
+
+    libraryDescription = 'An Android library that help you to finish activity with swipe back gesture.'
+
+    siteUrl = 'https://github.com/anzewei/NestRefreshLayout'
+    gitUrl = 'https://github.com/anzewei/NestRefreshLayout.git'
+
+    libraryVersion = '0.1'
+
+    developerId = 'anzewei'
+    developerName = 'An Zewei'
+    developerEmail = 'anzewei88@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 22
+        versionCode 1
+        versionName libraryVersion
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:23.4.0'
+}
+apply from: 'https://raw.githubusercontent.com/anzewei/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/anzewei/JCenter/master/bintrayv1.gradle'

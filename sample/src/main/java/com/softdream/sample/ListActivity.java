@@ -7,22 +7,22 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.github.anzewei.pagelist.base.AbsListLoader;
-import com.github.anzewei.pagelist.base.IPageListener;
-import com.github.anzewei.pagelist.normalstyle.PageListLoader;
+import cn.appsdream.nestrefresh.base.AbsRefreshLayout;
+import cn.appsdream.nestrefresh.base.OnPullListener;
+import cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout;
 
 /**
  * Created by zewei on 2015-12-09.
  */
-public class ListActivity extends AppCompatActivity implements IPageListener {
-    AbsListLoader mLoader;
+public class ListActivity extends AppCompatActivity implements OnPullListener {
+    AbsRefreshLayout mLoader;
     private ArrayAdapter<String> mAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ListView listView = new ListView(this);
-        mLoader = new PageListLoader(listView);
+        mLoader = new NestRefreshLayout(listView);
         mLoader.setOnLoadingListener(this);
         mLoader.setPullLoadEnable(true);
         mLoader.setPullRefreshEnable(true);
@@ -33,12 +33,12 @@ public class ListActivity extends AppCompatActivity implements IPageListener {
     }
 
     @Override
-    public void onRefresh(AbsListLoader listLoader) {
+    public void onRefresh(AbsRefreshLayout listLoader) {
         getData(true);
     }
 
     @Override
-    public void onLoading(AbsListLoader listLoader) {
+    public void onLoading(AbsRefreshLayout listLoader) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

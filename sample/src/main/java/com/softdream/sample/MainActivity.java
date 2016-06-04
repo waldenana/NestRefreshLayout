@@ -13,6 +13,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_list).setOnClickListener(this);
         findViewById(R.id.btn_page).setOnClickListener(this);
+        findViewById(R.id.btn_nest).setOnClickListener(this);
     }
 
     @Override
@@ -23,6 +24,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_page:
                 startActivity(new Intent(this,PageListActivity.class));
+                break;
+            case R.id.btn_nest:
+                startActivity(new Intent(this,NestedScrollingActivity.class));
                 break;
         }
     }

@@ -5,9 +5,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
-    <com.github.anzewei.pagelist.normalstyle.PageListLoader
+    <cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout
         android:id="@+id/page"
-        app:refreshLayout="@layout/layout_header"
+        app:headerNestLayout="@layout/layout_header"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -15,5 +15,5 @@
             android:id="@+id/lsv"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.github.anzewei.pagelist.normalstyle.PageListLoader>
+    </cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout>
 </LinearLayout>

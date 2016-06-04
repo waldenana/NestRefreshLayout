@@ -4,12 +4,13 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-import com.github.anzewei.pagelist.normalstyle.PageListLoader;
+import cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout;
+
 
 /**
  * Created by zewei on 2016-04-28.
  */
-public class MyHeader extends TextView implements PageListLoader.LoaderDecor {
+public class MyHeader extends TextView implements NestRefreshLayout.LoaderDecor {
     public MyHeader(Context context) {
         super(context);
     }
