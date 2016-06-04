@@ -1,14 +1,14 @@
-# PageListLoader
+# NestRefreshLayout
 #使用方法
 
 ##1,配置gradle
 
 ``` groovy
-compile 'com.github.anzewei.pageListLoader:pageListLoader:0.3'
+compile 'cn.appsdream.nestrefresh:refreshLayout:0.1'
 ``` 
 ##2.设置属性
 ``` java
-PageListLoader loader = new PageListLoader(mView);
+NestRefreshLayout loader = new NestRefreshLayout(mView);
 loader.setRefreshEnable(true)//下拉刷新
 loader.setLoadMoreEnable(true)//底部加载更多
 ``` 
@@ -28,14 +28,14 @@ loader.onLoadAll();//没有更多了
   
 ```xml
   <style name="my_loader_style">
-        <item name="refreshLayout">@layout/下拉刷新的layout</item>
-        <item name="loadMoreLayout">@layout/加载更多的layout</item>
+        <item name="headerNestLayout">@layout/下拉刷新的layout</item>
+        <item name="footerNestLayout">@layout/加载更多的layout</item>
   </style>
 ``` 
   在程序的theme里增加
   
 ```xml
-  <item name"pageListLoaderStyle">@style/my_loader_style</item>
+  <item name"nestRefreshLayoutStyle">@style/my_loader_style</item>
 ``` 
   
 #需要注意
@@ -46,4 +46,4 @@ loader.onLoadAll();//没有更多了
   STATE_REFRESHING 开始刷新或者加载更多
   和
   scrollRate，这里会返回移动的距离，你可以用这个值进行自定义动画
-  更多详情，可以参见PullFooter和PullHeader
+  更多详情，可以参见NestFooter和NestHeader
