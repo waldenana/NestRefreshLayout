@@ -1,49 +1,82 @@
-# PageListLoader
-#使用方法
+# NestRefreshLayout
 
-##1,配置gradle
+# Demo Apk
+
+<a href="https://github.com/anzewei/ParallaxBackLayout/blob/master/ext/demo.apk?raw=true">DOWNLOAD</a>
+
+#Usage
+
+##Step 1
+- Add these lines to your build.gradle
 
 ``` groovy
-compile 'com.github.anzewei.pageListLoader:pageListLoader:0.3'
+compile 'cn.appsdream.nestrefresh:refreshLayout:0.1'
 ``` 
-##2.设置属性
-``` java
-PageListLoader loader = new PageListLoader(mView);
-loader.setRefreshEnable(true)//下拉刷新
-loader.setLoadMoreEnable(true)//底部加载更多
-``` 
-##3.更新完成
-
-在加载完成后你需要调用
+##Step 2
 
 ``` java
-loader.onLoadFinished();//完成加载
+NestRefreshLayout loader = new NestRefreshLayout(mView);
+loader.setRefreshEnable(true)
+loader.setLoadMoreEnable(true)
+``` 
+OR
+``` xml
+<cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/can_content_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/holo_blue_light"
+        android:cacheColorHint="@android:color/transparent"
+        android:clipToPadding="false"
+        android:scrollingCache="false"/>
+</cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout>
+``` 
+##Step 2
+
+-after get data
+
+``` java
+loader.onLoadFinished();
 ``` 
 ``` java
-loader.onLoadAll();//没有更多了
+loader.onLoadAll();
 ``` 
 
-#自定义下拉样式
-  定义style 
-  
+#Customer Style
+## Theme
 ```xml
   <style name="my_loader_style">
-        <item name="refreshLayout">@layout/下拉刷新的layout</item>
-        <item name="loadMoreLayout">@layout/加载更多的layout</item>
+        <item name="headerNestLayout">@layout/refresh_layout</item>
+        <item name="footerNestLayout">@layout/more_layout</item>
   </style>
 ``` 
-  在程序的theme里增加
+  Add to theme
   
 ```xml
-  <item name"pageListLoaderStyle">@style/my_loader_style</item>
+  <item name"nestRefreshLayoutStyle">@style/my_loader_style</item>
+```
+OR 
+##Add attr
+
+```xml
+<cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout
+    app:headerNestLayout="@layout/layout_header"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+</cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout>
 ``` 
+
+#Notice
+  You can customer Header and Footer only implement LoaderDecor
+  setState with 3 status
+  STATE_NORMAL     
+  STATE_READY       
+  STATE_REFRESHING 
   
-#需要注意
-  自定义的layout需要实现LoaderDecor接口，里面有两个方法
-  setState 有3个状态
-  STATE_NORMAL初始
-  STATE_READY 触发
-  STATE_REFRESHING 开始刷新或者加载更多
-  和
-  scrollRate，这里会返回移动的距离，你可以用这个值进行自定义动画
-  更多详情，可以参见PullFooter和PullHeader
+  and scroll will call function
+  scrollRate
+  More info NestFooter NestHeader
