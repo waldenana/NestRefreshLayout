@@ -2,7 +2,7 @@
 
 # Demo Apk
 
-<a href="https://github.com/anzewei/ParallaxBackLayout/blob/master/ext/demo.apk?raw=true">DOWNLOAD</a>
+<a href="https://github.com/anzewei/NestRefreshLayout/blob/master/ext/sample-debug.apk?raw=true">DOWNLOAD</a>
 
 #Usage
 
