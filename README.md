@@ -10,7 +10,7 @@
 - Add these lines to your build.gradle
 
 ``` groovy
-compile 'cn.appsdream.nestrefresh:refreshLayout:0.1'
+compile 'cn.appsdream.nestrefresh:refreshLayout:0.2'
 ``` 
 ##Step 2
 
