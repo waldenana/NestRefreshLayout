@@ -8,6 +8,7 @@
     <cn.appsdream.nestrefresh.normalstyle.NestRefreshLayout
         android:id="@+id/page"
         app:headerNestLayout="@layout/layout_header"
+        app:footerNestLayout="@layout/layout_footer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

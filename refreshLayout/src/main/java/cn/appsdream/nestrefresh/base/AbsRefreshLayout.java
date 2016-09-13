@@ -134,7 +134,7 @@ public abstract class AbsRefreshLayout extends ViewGroup implements NestedScroll
      */
     public AbsRefreshLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context, null, R.attr.absRefreshLayoutStyle);
+        init(context, attrs, R.attr.absRefreshLayoutStyle);
     }
 
     /**
@@ -192,7 +192,7 @@ public abstract class AbsRefreshLayout extends ViewGroup implements NestedScroll
         for (int i = 0; i < N; i++) {
             int attr = a.getIndex(i);
             if (attr == R.styleable.AbsRefreshLayout_footerNestLayout) {
-                resFooter = a.getInt(attr, resFooter);
+                resFooter = a.getResourceId(attr, resFooter);
                 break;
             }
         }

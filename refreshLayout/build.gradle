@@ -12,7 +12,7 @@ ext {
     siteUrl = 'https://github.com/anzewei/NestRefreshLayout'
     gitUrl = 'https://github.com/anzewei/NestRefreshLayout.git'
 
-    libraryVersion = '0.1'
+    libraryVersion = '0.2'
 
     developerId = 'anzewei'
     developerName = 'An Zewei'
@@ -24,12 +24,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 24
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 22
+        minSdkVersion 9
+        targetSdkVersion 24
         versionCode 1
         versionName libraryVersion
     }
@@ -43,7 +43,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:24.2.0'
 }
 apply from: 'https://raw.githubusercontent.com/anzewei/JCenter/master/installv1.gradle'
 apply from: 'https://raw.githubusercontent.com/anzewei/JCenter/master/bintrayv1.gradle'
