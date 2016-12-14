@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:checkableBehavior="all">
+
+    <item android:id="@+id/action_header" android:checkable="true" android:checked="true"
+        android:title="下拉刷新" app:showAsAction="never"/>
+    <item android:id="@+id/action_footer" android:checkable="true" android:checked="true"
+        android:title="加载更多" app:showAsAction="never"/>
+</group>
+</menu>

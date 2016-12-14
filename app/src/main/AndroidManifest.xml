@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.github.anzewei.refreshtest">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:name=".App"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".HorizontalActivity" android:label="水平滚动">
+            <intent-filter>
+                <action android:name="android.intent.action.Demo"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".HorizontalRecycleViewActivity" android:label="水平RecyclerView">
+            <intent-filter>
+                <action android:name="android.intent.action.Demo"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".RecycleViewActivity"  android:label="垂直RecyclerView">
+            <intent-filter>
+                <action android:name="android.intent.action.Demo"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ScrollViewActivity"  android:label="ScrollView">
+            <intent-filter>
+                <action android:name="android.intent.action.Demo"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ListViewActivity"  android:label="ListView">
+            <intent-filter>
+                <action android:name="android.intent.action.Demo"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
