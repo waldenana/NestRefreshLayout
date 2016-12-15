@@ -1,7 +1,6 @@
 package cn.appsdream.nestrefresh2;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +77,6 @@ public class NestedHeaderHelper {
                 consumed[0]=dxUnconsumed-dx;
                 consumed[1]=dyUnconsumed-dy;
                 nestedScroll(consumed);
-                Log.d(TAG, "dispatchNestedScroll ="+Arrays.toString(consumed));
                 if (offsetInWindow != null) {
                     offsetInWindow[0] = mView.getOffsetX() - startX;
                     offsetInWindow[1] = mView.getOffsetY() - startY;
@@ -101,7 +99,6 @@ public class NestedHeaderHelper {
     public boolean dispatchNestedPreScroll(final int dxUnconsumed, final int dyUnconsumed, @NonNull int[] consumed, int[] offsetInWindow, boolean byUser) {
         if (mFooterEnable || mHeaderEnable) {
             if (dxUnconsumed != 0 || dyUnconsumed != 0) {
-                Log.d(TAG, "dispatchNestedPreScroll enter");
                 int startX = 0;
                 int startY = 0;
                 if (offsetInWindow != null) {
@@ -131,7 +128,6 @@ public class NestedHeaderHelper {
                 consumed[0]=dxUnconsumed-dx;
                 consumed[1]=dyUnconsumed-dy;
                 nestedScroll(consumed);
-                Log.d(TAG, "dispatchNestedPreScroll ="+Arrays.toString(consumed));
                 if (offsetInWindow != null) {
                     offsetInWindow[0] = mView.getOffsetX() - startX;
                     offsetInWindow[1] = mView.getOffsetY() - startY;

@@ -61,6 +61,7 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
     private final int[] mScrollPreConsumed = new int[2];
     ArrayList<IHeaderFooter> mHeaders = new ArrayList<>();
     ArrayList<IHeaderFooter> mFooters = new ArrayList<>();
+    private ValueAnimatorCompat mOffsetAnimatorCompat;
 
     private final ArrayList<View> mMatchParentChildren = new ArrayList<>(1);
     private int mScrollState;
@@ -80,7 +81,6 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
      * outside control.
      */
     public static final int SCROLL_STATE_SETTLING = 2;
-    private MotionEvent mLastMoveEvent;
     private boolean mNestedScrollInProgress;
     private NestedHeaderHelper mHeaderHelper;
     private boolean mEnableFresh = true;
@@ -228,154 +228,6 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         }
     }
     //endregion
-
-    void setScrollState(int state) {
-        if (state == mScrollState) {
-            return;
-        }
-        mScrollState = state;
-    }
-
-    private void resetTouch() {
-        IHeaderFooter headerFooter = getReleaseTop();
-        if (headerFooter != null) {
-            headerFooter.onStartLoad(this);
-            animation2Y(headerFooter.getStartHeight(), headerFooter.getHeaderType());
-
-        } else
-            animation2Y(0, -1);
-    }
-
-    private IHeaderFooter getReleaseTop() {
-        for (IHeaderFooter header : mHeaders) {
-            if (header.shouldStartLoad()) {
-                return header;
-            }
-        }
-        for (IHeaderFooter footer : mFooters) {
-            if (footer.shouldStartLoad())
-                return footer;
-        }
-        return null;
-    }
-
-    private void onPointerUp(MotionEvent e) {
-        final int actionIndex = MotionEventCompat.getActionIndex(e);
-        if (e.getPointerId(actionIndex) == mScrollPointerId) {
-            // Pick a new pointer to pick up the slack.
-            final int newIndex = actionIndex == 0 ? 1 : 0;
-            mScrollPointerId = e.getPointerId(newIndex);
-            mLastTouchX = (int) (e.getX(newIndex));
-            mLastTouchY = (int) (e.getY(newIndex));
-        }
-    }
-
-    private void animation2Y(int y, final int headertype) {
-        int start = canScrollHorizontally ? getNestedScrollX() : getNestedScrollY();
-//        final boolean vertical = mNestHelper.getOffsetX() == 0;
-        if (start == 0) return;
-        ValueAnimatorCompat animator = ValueAnimatorCompat.createAnimator();
-        animator.setInterpolator(new DecelerateInterpolator());
-        animator.setIntValues(start, y);
-        animator.setDuration(Math.abs(y - start));
-        animator.addUpdateListener(new ValueAnimatorCompat.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimatorCompat animation) {
-                int value = animation.getAnimatedIntValue();
-                int dx = canScrollVertically ? 0 : value - getNestedScrollX();
-                int dy = canScrollVertically ? value - getNestedScrollY() : 0;
-                onNestedScroll(mTagetView, dx, dy, dx, dy);
-            }
-        });
-        animator.addListener(new ValueAnimatorCompat.AnimatorListener() {
-            @Override
-            public void onAnimationStart(ValueAnimatorCompat animator) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(ValueAnimatorCompat animator) {
-                if (headertype != -1 && !isLoading && mOnPullListener != null) {
-                    mOnPullListener.onLoading(RefreshLayout.this, headertype);
-                    isLoading = true;
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(ValueAnimatorCompat animator) {
-
-            }
-        });
-        animator.start();
-    }
-
-    private boolean scrollParent(int x, int y) {
-        mScrollConsumed[0] = 0;
-        mScrollConsumed[1] = 0;
-        onNestedPreScroll(this, x, y, mScrollConsumed);
-        x -= mScrollConsumed[0];
-        y -= mScrollConsumed[1];
-        Log.d(TAG,"scrollParent x=" +x +" y="+y);
-        if (x != 0 || y != 0) {
-            if(onNestedScrollInternal(this, x, y, x, y))
-                return true;
-            if (canScrollVertically && !shouldInterceptVertically(y + getNestedScrollY())) {
-                sendUpEvent();
-                sendDownEvent();
-                return false;
-            }
-            if (canScrollHorizontally && !shouldInterceptHorizontally(x + getNestedScrollX())) {
-                sendUpEvent();
-                sendDownEvent();
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void scrollBy(int x, int y) {
-        mHeaderHelper.nestedScroll(x, y);
-    }
-
-    void onPulled(int dx, int dy) {
-
-        boolean offset = false;
-        mNestScroll[0] = dx;
-        mNestScroll[1] = dy;
-        mTmpTransform[0] = 0;
-        mTmpTransform[1] = 0;
-        for (IHeaderFooter header : mHeaders) {
-            offset = mTransform.transformNestScroll(header.getHeaderType(), mNestScroll, mTmpTransform);
-            if (offset)
-                break;
-        }
-        if (!offset) {
-            mTmpTransform[0] = 0;
-            mTmpTransform[1] = 0;
-            for (IHeaderFooter header : mFooters) {
-                offset = mTransform.transformNestScroll(header.getHeaderType(), mNestScroll, mTmpTransform);
-                if (offset)
-                    break;
-            }
-        }
-        dx = mTmpTransform[0];
-        dy = mTmpTransform[1];
-        if (canScrollHorizontally) {
-            mNestHelper.offsetLeftAndRight(dx);
-            mViewOffsetHelper.setLeftAndRightOffset(-dx);
-        }
-        if (canScrollVertically) {
-            mNestHelper.offsetTopAndBottom(dy);
-            mViewOffsetHelper.setTopAndBottomOffset(-dy);
-        }
-        for (IHeaderFooter headerFooter : mHeaders) {
-            headerFooter.onParentScrolled(this, -dx, -dy);
-        }
-        for (IHeaderFooter headerFooter : mFooters) {
-            headerFooter.onParentScrolled(this, -dx, -dy);
-        }
-    }
 
     public void setTransform(Transform transform) {
         mTransform = transform;
@@ -603,7 +455,6 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
     @Override
     public void stopNestedScroll() {
         getScrollingChildHelper().stopNestedScroll();
-        resetTouch();
     }
 
     @Override
@@ -653,8 +504,21 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        int oritation = canScrollVertically ? ViewCompat.SCROLL_AXIS_VERTICAL : ViewCompat.SCROLL_AXIS_HORIZONTAL;
-        return isEnabled() && (nestedScrollAxes & oritation) != 0;
+        int orientation = canScrollVertically ? ViewCompat.SCROLL_AXIS_VERTICAL : ViewCompat.SCROLL_AXIS_HORIZONTAL;
+        return isEnabled() && (nestedScrollAxes & orientation) != 0;
+    }
+
+    @Override
+    public int getNestedScrollAxes() {
+        return mNestedScrollingParentHelper.getNestedScrollAxes();
+    }
+
+    @Override
+    public void onStopNestedScroll(View target) {
+        mNestedScrollingParentHelper.onStopNestedScroll(target);
+        mNestedScrollInProgress = false;
+        stopNestedScroll();
+        resetTouch();
     }
 
     @Override
@@ -674,67 +538,161 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         // Reset the counter of how much leftover scroll needs to be consumed.
         getScrollingParentHelper().onNestedScrollAccepted(child, target, ViewCompat.SCROLL_AXIS_VERTICAL | ViewCompat.SCROLL_AXIS_HORIZONTAL);
         // Dispatch up to the nested parent
-        int oritation = canScrollVertically ? ViewCompat.SCROLL_AXIS_VERTICAL : ViewCompat.SCROLL_AXIS_HORIZONTAL;
         startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL | ViewCompat.SCROLL_AXIS_HORIZONTAL);
         mNestedScrollInProgress = true;
     }
 
+    private void animation2Y(int y, final int headertype) {
+        Log.d(TAG,"call by="+Thread.currentThread().getStackTrace()[3].getMethodName());
+        int start = canScrollHorizontally ? getNestedScrollX() : getNestedScrollY();
+        if (start == 0) return;
+        if (mOffsetAnimatorCompat != null && mOffsetAnimatorCompat.isRunning())
+            mOffsetAnimatorCompat.cancel();
+        if (y == start || isLoading)
+            return;
+        ValueAnimatorCompat animator = ValueAnimatorCompat.createAnimator();
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setIntValues(start, y);
+        animator.setDuration(Math.abs(y - start));
+        animator.addUpdateListener(new ValueAnimatorCompat.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimatorCompat animation) {
+                int value = animation.getAnimatedIntValue();
+                int dx = canScrollVertically ? 0 : value - getNestedScrollX();
+                int dy = canScrollVertically ? value - getNestedScrollY() : 0;
+                mHeaderHelper.dispatchNestedPreScroll(dx, dy, mScrollConsumed, null, false);
+
+            }
+        });
+        animator.addListener(new ValueAnimatorCompat.AnimatorListener() {
+            @Override
+            public void onAnimationStart(ValueAnimatorCompat animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(ValueAnimatorCompat animator) {
+                if (headertype != -1 && !isLoading && mOnPullListener != null) {
+                    mOnPullListener.onLoading(RefreshLayout.this, headertype);
+                    isLoading = true;
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(ValueAnimatorCompat animator) {
+
+            }
+        });
+        mOffsetAnimatorCompat = animator;
+        animator.start();
+    }
+
+    private boolean scrollByMotionEvent(int x, int y, MotionEvent event) {
+        mScrollConsumed[0] = 0;
+        mScrollConsumed[1] = 0;
+        onNestedPreScroll(this, x, y, mScrollConsumed);
+        int dx = x - mScrollConsumed[0];
+        int dy = y - mScrollConsumed[1];
+        if (x != 0 || y != 0) {
+            if (dispatchNestedScroll(x, y, dx, dy,mScrollOffset)) {
+                dx += mScrollOffset[0];
+                dy += mScrollOffset[1];
+            }
+            if (dx==0 && dy==0)
+                return true;
+            Log.d(TAG,"after scroll "+ dy);
+            if (canScrollVertically && !shouldInterceptVertically(dy + getNestedScrollY())) {
+                sendUpEvent(event);
+                sendDownEvent(event);
+                return false;
+            }
+            if (canScrollHorizontally && !shouldInterceptHorizontally(dx + getNestedScrollX())) {
+                sendUpEvent(event);
+                sendDownEvent(event);
+                return false;
+            }
+            if (!isLoading)
+                mHeaderHelper.dispatchNestedScroll(dx, dy, null, true);
+        }
+        return true;
+    }
+
+    @Override
+    public void scrollBy(int x, int y) {
+        mHeaderHelper.nestedScroll(x, y);
+    }
+
+    void onPulled(int dx, int dy) {
+
+        boolean offset = false;
+        mNestScroll[0] = dx;
+        mNestScroll[1] = dy;
+        mTmpTransform[0] = 0;
+        mTmpTransform[1] = 0;
+        for (IHeaderFooter header : mHeaders) {
+            offset = mTransform.transformNestScroll(header.getHeaderType(), mNestScroll, mTmpTransform);
+            if (offset)
+                break;
+        }
+        if (!offset) {
+            mTmpTransform[0] = 0;
+            mTmpTransform[1] = 0;
+            for (IHeaderFooter header : mFooters) {
+                offset = mTransform.transformNestScroll(header.getHeaderType(), mNestScroll, mTmpTransform);
+                if (offset)
+                    break;
+            }
+        }
+        dx = mTmpTransform[0];
+        dy = mTmpTransform[1];
+        if (canScrollHorizontally) {
+            mNestHelper.offsetLeftAndRight(dx);
+            mViewOffsetHelper.setLeftAndRightOffset(-dx);
+        }
+        if (canScrollVertically) {
+            mNestHelper.offsetTopAndBottom(dy);
+            mViewOffsetHelper.setTopAndBottomOffset(-dy);
+        }
+        for (IHeaderFooter headerFooter : mHeaders) {
+            headerFooter.onParentScrolled(this, -dx, -dy);
+        }
+        for (IHeaderFooter headerFooter : mFooters) {
+            headerFooter.onParentScrolled(this, -dx, -dy);
+        }
+    }
+
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        Log.d(TAG, "=============== x=" + dx + " y=" + dy);
-        Log.d(TAG, "=============== nx=" + getNestedScrollX() + " ny=" + getNestedScrollY());
         if (!isLoading && mHeaderHelper.dispatchNestedPreScroll(dx, dy, consumed, null, true)) {
             dx -= consumed[0];
             dy -= consumed[1];
         }
         mScrollPreConsumed[0] = 0;
         mScrollPreConsumed[1] = 0;
-        Log.d(TAG, "onNestedPreScroll x=" + dx + " y=" + dy);
         if (dispatchNestedPreScroll(dx, dy, mScrollPreConsumed, mScrollOffset)) {
             consumed[0] += mScrollPreConsumed[0];
             consumed[1] += mScrollPreConsumed[1];
-            mLastTouchX-=mScrollOffset[0];
-            mLastTouchY-=mScrollOffset[1];
+            mLastTouchX -= mScrollOffset[0];
+            mLastTouchY -= mScrollOffset[1];
         }
     }
 
     @Override
     public void onNestedScroll(final View target, final int dxConsumed, final int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        onNestedScrollInternal(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
-    }
-
-    private boolean onNestedScrollInternal(final View target, final int dxConsumed, final int dyConsumed,
-                                           int dxUnconsumed, int dyUnconsumed){
-        Log.d(TAG, "---------------------");
-        boolean change =false;
         if (!isLoading && mHeaderHelper.dispatchNestedPreScroll(dxUnconsumed, dyUnconsumed, mScrollConsumed, null, true)) {
             dxUnconsumed -= mScrollConsumed[0];
             dyUnconsumed -= mScrollConsumed[1];
-            change=true;
         }
         if (dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
                 mScrollOffset)) {
             dxUnconsumed += mScrollOffset[0];
             dyUnconsumed += mScrollOffset[1];
-            change=true;
         }
-        if (!isLoading && mHeaderHelper.dispatchNestedScroll(dxUnconsumed, dyUnconsumed, null, true))
-            change=true;
-        Log.d(TAG, "======end=========");
-        return change;
-    }
-    @Override
-    public int getNestedScrollAxes() {
-        return mNestedScrollingParentHelper.getNestedScrollAxes();
+        if (!isLoading)
+            mHeaderHelper.dispatchNestedScroll(dxUnconsumed, dyUnconsumed, null, true);
     }
 
-    @Override
-    public void onStopNestedScroll(View target) {
-        mNestedScrollingParentHelper.onStopNestedScroll(target);
-        mNestedScrollInProgress = false;
-        stopNestedScroll();
-    }
 
     //endregion
 
@@ -748,8 +706,8 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         for (IHeaderFooter header : mFooters) {
             header.onStopLoad(this);
         }
-        animation2Y(0, -1);
         isLoading = false;
+        animation2Y(0, -1);
     }
 
     public void onLoadAll() {
@@ -759,8 +717,8 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         for (IHeaderFooter header : mFooters) {
             header.onLoadAll(this);
         }
-        animation2Y(0, -1);
         isLoading = false;
+        animation2Y(0, -1);
     }
 
 
@@ -768,7 +726,49 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         mOnPullListener = onPullListener;
     }
 
-    //region intercept
+    //region MotionEvent
+
+    private void setScrollState(int state) {
+        if (state == mScrollState) {
+            return;
+        }
+        mScrollState = state;
+    }
+
+    private void resetTouch() {
+        setScrollState(SCROLL_STATE_IDLE);
+        IHeaderFooter headerFooter = getReleaseTop();
+        if (headerFooter != null) {
+            headerFooter.onStartLoad(this);
+            animation2Y(headerFooter.getStartHeight(), headerFooter.getHeaderType());
+
+        } else
+            animation2Y(0, -1);
+    }
+
+    private IHeaderFooter getReleaseTop() {
+        for (IHeaderFooter header : mHeaders) {
+            if (header.shouldStartLoad()) {
+                return header;
+            }
+        }
+        for (IHeaderFooter footer : mFooters) {
+            if (footer.shouldStartLoad())
+                return footer;
+        }
+        return null;
+    }
+
+    private void onPointerUp(MotionEvent e) {
+        final int actionIndex = MotionEventCompat.getActionIndex(e);
+        if (e.getPointerId(actionIndex) == mScrollPointerId) {
+            // Pick a new pointer to pick up the slack.
+            final int newIndex = actionIndex == 0 ? 1 : 0;
+            mScrollPointerId = e.getPointerId(newIndex);
+            mLastTouchX = (int) (e.getX(newIndex));
+            mLastTouchY = (int) (e.getY(newIndex));
+        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -782,19 +782,19 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
                 mLastTouchX = (int) e.getX();
                 mLastTouchY = (int) (e.getY());
                 int nestedScrollAxis = ViewCompat.SCROLL_AXIS_NONE;
-//                if (canScrollHorizontally) {
-                nestedScrollAxis |= ViewCompat.SCROLL_AXIS_HORIZONTAL;
-//                }
-//                if (canScrollVertically) {
-                nestedScrollAxis |= ViewCompat.SCROLL_AXIS_VERTICAL;
-//                }
+                if (canScrollHorizontally) {
+                    nestedScrollAxis |= ViewCompat.SCROLL_AXIS_HORIZONTAL;
+                }
+                if (canScrollVertically) {
+                    nestedScrollAxis |= ViewCompat.SCROLL_AXIS_VERTICAL;
+                }
                 startNestedScroll(nestedScrollAxis);
             }
             break;
             case MotionEventCompat.ACTION_POINTER_DOWN: {
                 mScrollPointerId = e.getPointerId(0);
-                mLastTouchX = (int) (e.getX());
-                mLastTouchY = (int) (e.getY());
+                mLastTouchX = (int) (e.getX(actionIndex) + 0.5f);
+                mLastTouchY = (int) (e.getY(actionIndex) + 0.5f);
             }
             break;
 
@@ -811,43 +811,45 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
                     return false;
                 }
 
-                releaseEvent();
-                mLastMoveEvent = MotionEvent.obtain(e);
                 final int x = (int) (e.getX(index));
                 final int y = (int) (e.getY(index));
                 int dx = mLastTouchX - x;
                 int dy = mLastTouchY - y;
                 mScrollOffset[0] = 0;
                 mScrollOffset[1] = 0;
-//                if (mScrollState != SCROLL_STATE_DRAGGING) {
-//                    boolean startScroll = false;
-//                    if (canScrollHorizontally && Math.abs(dx) > mTouchSlop) {
-//                        if (dx > 0) {
-//                            dx -= mTouchSlop;
-//                        } else {
-//                            dx += mTouchSlop;
-//                        }
-//                        startScroll = true;
-//                    }
-//                    if (canScrollVertically && Math.abs(dy) > mTouchSlop) {
-//                        if (dy > 0) {
-//                            dy -= mTouchSlop;
-//                        } else {
-//                            dy += mTouchSlop;
-//                        }
-//                        startScroll = true;
-//                    }
-//                    if (startScroll) {
-//                        setScrollState(SCROLL_STATE_DRAGGING);
-//                    }
-//                }
-                mLastTouchX = x ;
-                mLastTouchY = y;
-                return scrollParent(dx, dy);
+                if (mScrollState != SCROLL_STATE_DRAGGING) {
+                    boolean startScroll = false;
+                    if (canScrollHorizontally && Math.abs(dx) > mTouchSlop) {
+                        if (dx > 0) {
+                            dx -= mTouchSlop;
+                        } else {
+                            dx += mTouchSlop;
+                        }
+                        startScroll = true;
+                    }
+                    if (canScrollVertically && Math.abs(dy) > mTouchSlop) {
+                        if (dy > 0) {
+                            dy -= mTouchSlop;
+                        } else {
+                            dy += mTouchSlop;
+                        }
+                        startScroll = true;
+                    }
+                    if (startScroll) {
+                        setScrollState(SCROLL_STATE_DRAGGING);
+                    }
+                }
+                if (mScrollState == SCROLL_STATE_DRAGGING) {
+                    mLastTouchX = x;
+                    mLastTouchY = y;
+                    return scrollByMotionEvent(canScrollHorizontally ? dx : 0, canScrollVertically ? dy : 0, e);
+                }
             }
+            break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 stopNestedScroll();
+                resetTouch();
                 break;
         }
         return true;
@@ -868,7 +870,6 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
      */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-
         int pointerIndex = -1;
         if (!isEnabled() || mNestedScrollInProgress) {
             return false;
@@ -884,12 +885,12 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
                 mLastTouchX = (int) (event.getX());
                 mLastTouchY = (int) (event.getY());
                 int nestedScrollAxis = ViewCompat.SCROLL_AXIS_NONE;
-//                if (canScrollHorizontally) {
-                nestedScrollAxis |= ViewCompat.SCROLL_AXIS_HORIZONTAL;
-//                }
-//                if (canScrollVertically) {
-                nestedScrollAxis |= ViewCompat.SCROLL_AXIS_VERTICAL;
-//                }
+                if (canScrollHorizontally) {
+                    nestedScrollAxis |= ViewCompat.SCROLL_AXIS_HORIZONTAL;
+                }
+                if (canScrollVertically) {
+                    nestedScrollAxis |= ViewCompat.SCROLL_AXIS_VERTICAL;
+                }
                 startNestedScroll(nestedScrollAxis);
                 break;
 
@@ -919,11 +920,11 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
                 final int yDiff = mLastTouchY - currentY;
                 final int xDiff = mLastTouchX - currentX;
 
-                mLastTouchX = currentX ;
+                mLastTouchX = currentX;
                 mLastTouchY = currentY;
                 if (dispatchNestedPreScroll(xDiff, yDiff, mScrollPreConsumed, mScrollOffset)) {
-                    mLastTouchX-=mScrollOffset[0];
-                    mLastTouchY-=mScrollOffset[1];
+                    mLastTouchX -= mScrollOffset[0];
+                    mLastTouchY -= mScrollOffset[1];
                     return true;
                 }
                 // State is changed to drag if over slop
@@ -943,7 +944,7 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
     }
 
     private boolean shouldInterceptHorizontally(int xdis) {
-        Log.d(TAG, "shouldInterceptHorizontally x=" + xdis);
+//        Log.d(TAG, "shouldInterceptHorizontally x=" + xdis);
         return canScrollHorizontally
                 && (mEnableFresh || mEnablePullLoad)
                 && (mEnableFresh && xdis < 0 || mEnablePullLoad && xdis > 0) && !canScrollHorizontally(xdis);
@@ -951,6 +952,7 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
     }
 
     private boolean shouldInterceptVertically(int ydis) {
+//        Log.d(TAG, "shouldInterceptVertically x=" + ydis);
         return canScrollVertically
                 && (mEnableFresh || mEnablePullLoad)
                 && (mEnableFresh && ydis < 0 || mEnablePullLoad && ydis > 0)
@@ -1024,23 +1026,18 @@ public class RefreshLayout extends ViewGroup implements NestedScrollingParent, N
         return true;
     }
 
-    private void sendDownEvent() {
-        final MotionEvent last = mLastMoveEvent;
+    private void sendDownEvent(MotionEvent lastMoveEvent) {
+        final MotionEvent last = MotionEvent.obtain(lastMoveEvent);
         MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime(), MotionEvent.ACTION_DOWN, last.getX(), last.getY(), last.getMetaState());
         dispatchTouchEvent(e);
+        last.recycle();
     }
 
-    private void sendUpEvent() {
-        final MotionEvent last = mLastMoveEvent;
-        MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime(), MotionEvent.ACTION_CANCEL, last.getX(), last.getY(), last.getMetaState());
-        dispatchTouchEvent(e);
-    }
-
-    private void releaseEvent() {
-        if (mLastMoveEvent != null) {
-            mLastMoveEvent.recycle();
-            mLastMoveEvent = null;
-        }
+    private void sendUpEvent(MotionEvent lastMoveEvent) {
+//        final MotionEvent last = MotionEvent.obtain(lastMoveEvent);
+//        MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime(), MotionEvent.ACTION_CANCEL, last.getX(), last.getY(), last.getMetaState());
+//        dispatchTouchEvent(e);
+//        last.recycle();
     }
 
     //endregion
